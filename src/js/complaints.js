@@ -73,7 +73,7 @@ if (submitBtn) {
         const { data: sessionData } = await supabase.auth.getSession()
 
         if (!sessionData.session) {
-            window.location.href = "/src/pages/login.html"
+            window.location.href = "/login.html"
             return
         }
 
@@ -93,19 +93,23 @@ if (submitBtn) {
 
         if (file) {
 
-            const fileName = Date.now() + "_" + file.name
+            const fileName = `${Date.now()}_${file.name}`
 
-            const { error: uploadError } = await supabase.storage
+            const { data, error } = await supabase.storage
                 .from("complaint-images")
                 .upload(fileName, file)
 
-            if (uploadError) {
-                console.error(uploadError)
+            if (error) {
+                console.error("UPLOAD ERROR:", error)
+                alert("Image upload failed")
+                return
             }
 
             photoUrl = supabase.storage
                 .from("complaint-images")
                 .getPublicUrl(fileName).data.publicUrl
+
+            console.log("Uploaded image URL:", photoUrl)
         }
 
         const { error } = await supabase
@@ -131,7 +135,7 @@ if (submitBtn) {
 
         alert("Complaint submitted successfully")
 
-        window.location.href = "/src/pages/dashboard.html"
+        window.location.href = "/dashboard.html"
 
     })
 

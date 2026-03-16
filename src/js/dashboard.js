@@ -5,7 +5,7 @@ async function loadDashboard() {
     const { data: sessionData } = await supabase.auth.getSession()
 
     if (!sessionData.session) {
-        window.location.href = "/src/pages/login.html"
+        window.location.href = "/login.html"
         return
     }
 
@@ -86,7 +86,7 @@ table.appendChild(row)
 
 document.getElementById("lodgeComplaintBtn")
     .addEventListener("click", () => {
-        window.location.href = "/src/pages/complaint.html"
+        window.location.href = "/complaint.html"
     })
 
 loadDashboard()

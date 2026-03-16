@@ -45,7 +45,7 @@ if (registerBtn) {
     }
 
     alert("Registration successful")
-    window.location.href = "/src/pages/login.html"
+    window.location.href = "/login.html"
   })
 }
 
@@ -67,6 +67,6 @@ if (loginBtn) {
       return
     }
 
-    window.location.href = "/src/pages/dashboard.html"
+    window.location.href = "/dashboard.html"
   })
 }

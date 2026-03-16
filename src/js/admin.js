@@ -5,7 +5,7 @@ import { supabase } from "./supabaseClient.js"
 const map = L.map("adminMap").setView([18.5204, 73.8567], 13)
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "© OpenStreetMap"
+ attribution: "© OpenStreetMap"
 }).addTo(map)
 
 let heatLayer
@@ -19,74 +19,76 @@ map.addLayer(markersLayer)
 
 async function loadComplaints() {
 
-    const selectedCategory = document.getElementById("categoryFilter")?.value
+ const selectedCategory = document.getElementById("categoryFilter")?.value
 
-    let query = supabase.from("complaints").select("*")
+ let query = supabase.from("complaints").select("*")
 
-    if (selectedCategory && selectedCategory !== "all") {
-        query = query.eq("category", selectedCategory)
-    }
+ if (selectedCategory && selectedCategory !== "all") {
+  query = query.eq("category", selectedCategory)
+ }
 
-    const { data, error } = await query.order("created_at", { ascending: false })
+ const { data, error } = await query.order("created_at", { ascending:false })
 
-    if (error) {
-        console.error(error)
-        return
-    }
+ if(error){
+  console.error(error)
+  return
+ }
 
+ // ---------- ANALYTICS ----------
 
-    // ---------- ANALYTICS ----------
+ const total = data.length
+ const pending = data.filter(c => c.status === "pending").length
+ const resolved = data.filter(c => c.status === "resolved").length
 
-    const total = data.length
+ const categoryCount = {}
 
-    const pending = data.filter(c => c.status === "pending").length
+ data.forEach(c=>{
+  categoryCount[c.category] = (categoryCount[c.category] || 0) + 1
+ })
 
-    const resolved = data.filter(c => c.status === "resolved").length
+ let topCategory = "-"
+ let maxCount = 0
 
-    const categoryCount = {}
+ for(const category in categoryCount){
+  if(categoryCount[category] > maxCount){
+   maxCount = categoryCount[category]
+   topCategory = category
+  }
+ }
 
-    data.forEach(c => {
-        categoryCount[c.category] = (categoryCount[c.category] || 0) + 1
-    })
-
-    let topCategory = "-"
-    let maxCount = 0
-
-    for (const category in categoryCount) {
-        if (categoryCount[category] > maxCount) {
-            maxCount = categoryCount[category]
-            topCategory = category
-        }
-    }
-
-    // Update dashboard cards
-    document.getElementById("totalComplaints").innerText = total
-    document.getElementById("pendingComplaints").innerText = pending
-    document.getElementById("resolvedComplaints").innerText = resolved
-    document.getElementById("topCategory").innerText = topCategory
+ document.getElementById("totalComplaints").innerText = total
+ document.getElementById("pendingComplaints").innerText = pending
+ document.getElementById("resolvedComplaints").innerText = resolved
+ document.getElementById("topCategory").innerText = topCategory
 
 
-    // ---------- TABLE + MAP ----------
+ // ---------- TABLE + MAP ----------
 
-    const table = document.getElementById("adminTable")
-    table.innerHTML = ""
+ const table = document.getElementById("adminTable")
+ table.innerHTML = ""
 
-    // Clear old markers
-    markersLayer.clearLayers()
+ markersLayer.clearLayers()
 
-    // Prepare map bounds + heatmap points
-    const bounds = []
-    const heatPoints = []
+ const bounds = []
+ const heatPoints = []
 
-    data.forEach(c => {
+ data.forEach(c=>{
 
-        const row = document.createElement("tr")
+  const row = document.createElement("tr")
 
-        row.innerHTML = `
+  row.innerHTML = `
 <td>${c.comp_id}</td>
 <td>${c.category}</td>
 <td>${c.description}</td>
+
+<td>
+${c.photo_url 
+ ? `<img src="${c.photo_url}" width="80" style="border-radius:6px; cursor:pointer;" onclick="window.open('${c.photo_url}')">`
+ : "No Image"}
+</td>
+
 <td>${c.status}</td>
+
 <td>
 <button onclick="resolveComplaint('${c.comp_id}')">
 Resolve
@@ -94,136 +96,142 @@ Resolve
 </td>
 `
 
-        table.appendChild(row)
+  table.appendChild(row)
 
-        // Add marker if coordinates exist
-        if (c.latitude && c.longitude) {
+  if(c.latitude && c.longitude){
 
-            bounds.push([c.latitude, c.longitude])
+   bounds.push([c.latitude, c.longitude])
 
-            heatPoints.push([c.latitude, c.longitude, 0.5])
+   heatPoints.push([c.latitude, c.longitude, 0.5])
 
-            const iconColor = c.status === "resolved" ? "green" : "red"
+   const iconColor = c.status === "resolved" ? "green" : "red"
 
-            const icon = L.icon({
-                iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${iconColor}.png`,
-                shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-                iconSize: [25, 41],
-                iconAnchor: [12, 41]
-            })
+   const icon = L.icon({
+    iconUrl:`https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${iconColor}.png`,
+    shadowUrl:"https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+    iconSize:[25,41],
+    iconAnchor:[12,41]
+   })
 
-            const marker = L.marker(
-                [c.latitude, c.longitude],
-                { icon: icon }
-            ).addTo(markersLayer)
+   const marker = L.marker(
+    [c.latitude, c.longitude],
+    { icon: icon }
+   ).addTo(markersLayer)
 
-            marker.bindPopup(`
+   marker.bindPopup(`
 <b>${c.category}</b><br>
 ${c.description}<br>
 Status: ${c.status}<br>
-ID: ${c.comp_id}
+ID: ${c.comp_id}<br><br>
+
+${c.photo_url 
+ ? `<img src="${c.photo_url}" width="200" style="border-radius:8px; cursor:pointer;" onclick="window.open('${c.photo_url}')">`
+ : "No image uploaded"}
 `)
-        }
+  }
 
-    })
+ })
 
+ // ---------- AUTO ZOOM ----------
 
-    // ---------- AUTO ZOOM ----------
+ if(bounds.length){
+  map.fitBounds(bounds)
+ }
 
-    if (bounds.length) {
-        map.fitBounds(bounds)
-    }
+ // ---------- HEATMAP ----------
 
+ if(heatLayer){
+  map.removeLayer(heatLayer)
+ }
 
-    // ---------- HEATMAP ----------
-
-    if (heatLayer) {
-        map.removeLayer(heatLayer)
-    }
-
-    heatLayer = L.heatLayer(heatPoints, {
-        radius: 25,
-        blur: 20,
-        maxZoom: 17
-    }).addTo(map)
+ heatLayer = L.heatLayer(heatPoints,{
+  radius:25,
+  blur:20,
+  maxZoom:17
+ }).addTo(map)
 
 }
 
 
 // ---------- RESOLVE COMPLAINT ----------
 
-window.resolveComplaint = async function (id) {
+window.resolveComplaint = async function(id){
 
-    const { data: complaint, error: fetchErr } = await supabase
-        .from("complaints")
-        .select("comp_id, user_id")
-        .eq("comp_id", id)
-        .single()
+ const { data: complaint, error: fetchErr } = await supabase
+  .from("complaints")
+  .select("comp_id, user_id")
+  .eq("comp_id", id)
+  .single()
 
-    if (fetchErr) {
-        console.error(fetchErr)
-        return
-    }
+ if(fetchErr){
+  console.error(fetchErr)
+  return
+ }
 
-    const { error } = await supabase
-        .from("complaints")
-        .update({ status: "awaiting_confirmation" })
-        .eq("comp_id", id)
+ const { error } = await supabase
+  .from("complaints")
+  .update({ status:"awaiting_confirmation" })
+  .eq("comp_id", id)
 
-    if (error) {
-        console.error(error)
-        return
-    }
+ if(error){
+  console.error(error)
+  return
+ }
 
-    // fetch user's email
-    const { data: user, error: userErr } = await supabase
-        .from("users")
-        .select("email")
-        .eq("user_id", complaint.user_id)
-        .single()
+ const { data:user, error:userErr } = await supabase
+  .from("users")
+  .select("email")
+  .eq("user_id", complaint.user_id)
+  .single()
 
-    if (userErr) {
-        console.error(userErr)
-        return
-    }
+ if(userErr){
+  console.error(userErr)
+  return
+ }
 
-    sendConfirmationEmail(user.email, complaint.comp_id)
+ sendConfirmationEmail(user.email, complaint.comp_id)
 
-    loadComplaints()
+ loadComplaints()
 }
 
 
 // ---------- FILTER ----------
 
 document.getElementById("categoryFilter")
-    ?.addEventListener("change", loadComplaints)
+ ?.addEventListener("change", loadComplaints)
 
 
 // ---------- INITIAL LOAD ----------
 
 loadComplaints()
 
+
+// ---------- LOGOUT ----------
+
 document.getElementById("adminLogoutBtn")
-    ?.addEventListener("click", async () => {
+ ?.addEventListener("click", async () => {
 
-        await supabase.auth.signOut()
+  await supabase.auth.signOut()
 
-        window.location.href = "/"
+  window.location.href = "/"
 
-    })
+ })
 
-function sendConfirmationEmail(email, compId) {
 
-    const yesLink = `${window.location.origin}/src/pages/confirm.html?comp=${compId}&action=yes`
-    const noLink = `${window.location.origin}/src/pages/confirm.html?comp=${compId}&action=no`
+// ---------- EMAIL ----------
 
-    emailjs.send("service_lyxua09", "template_m1g3k3k", {
-        user_email: email,
-        complaint_id: compId,
-        yes_link: yesLink,
-        no_link: noLink
-    })
-        .then(() => console.log("Email sent"))
-        .catch(err => console.error("Email error", err))
+function sendConfirmationEmail(email, compId){
+
+ const yesLink = `${window.location.origin}/confirm.html?comp=${compId}&action=yes`
+ const noLink = `${window.location.origin}/confirm.html?comp=${compId}&action=no`
+
+ emailjs.send("service_lyxua09","template_m1g3k3k",{
+  user_email: email,
+  complaint_id: compId,
+  yes_link: yesLink,
+  no_link: noLink
+ })
+ .then(()=>console.log("Email sent"))
+ .catch(err=>console.error("Email error",err))
 
 }

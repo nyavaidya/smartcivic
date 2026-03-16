@@ -22,13 +22,13 @@ document.getElementById("adminLogin").style.display="none"
 
 function goLogin(){
 
-window.location.href="/src/pages/login.html"
+window.location.href="/login.html"
 
 }
 
 function goRegister(){
 
-window.location.href="/src/pages/register.html"
+window.location.href="/register.html"
 
 }
 
@@ -42,7 +42,7 @@ const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASS
 
 if(username === ADMIN_USER && password === ADMIN_PASS){
 
-window.location.href="/src/pages/admin.html"
+window.location.href="/admin.html"
 
 }else{
 
