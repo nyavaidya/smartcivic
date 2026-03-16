@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartCivic Admin</title>
+  <link rel="stylesheet" href="/src/css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="sc-nav">
+  <div class="sc-nav-brand">
+    <span class="dot"></span>
+    Smart<span class="brand-accent">Civic</span>
+    <span style="font-size:11px; font-family:var(--font-body); font-weight:500; color:var(--slate); background:var(--navy-light); border:1px solid var(--border); border-radius:4px; padding:2px 8px; margin-left:4px;">ADMIN</span>
+  </div>
+  <div class="sc-nav-actions">
+    <button id="adminLogoutBtn" class="btn-ghost btn-sm">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
+      </svg>
+      Logout
+    </button>
+  </div>
+</nav>
+
+<div class="sc-container" style="padding-top:32px; padding-bottom:56px;">
+
+  <!-- Page title -->
+  <div class="sc-fade-up" style="margin-bottom:28px;">
+    <h1 style="font-size:1.5rem; margin-bottom:6px;">Admin Panel</h1>
+    <p style="font-size:14px; color:var(--slate);">Manage, prioritise, and resolve citizen complaints across the city.</p>
+  </div>
+
+  <!-- Stats Row -->
+  <div id="statsContainer" class="sc-fade-up" style="display:flex; gap:14px; margin-bottom:28px; flex-wrap:wrap; animation-delay:0.06s;">
+    <div class="statCard">
+      <h3>Total Complaints</h3>
+      <p id="totalComplaints">0</p>
+    </div>
+    <div class="statCard">
+      <h3>Pending</h3>
+      <p id="pendingComplaints">0</p>
+    </div>
+    <div class="statCard">
+      <h3>Resolved</h3>
+      <p id="resolvedComplaints">0</p>
+    </div>
+    <div class="statCard">
+      <h3>Top Issue</h3>
+      <p id="topCategory" style="font-size:1rem; padding-top:4px;">—</p>
+    </div>
+  </div>
+
+  <!-- Map Section -->
+  <div class="sc-fade-up" style="animation-delay:0.12s; margin-bottom:28px;">
+    <div class="sc-section-header">
+      <div class="sc-section-title">Complaint Map</div>
+      <div class="sc-filter-row" style="margin:0;">
+        <select id="categoryFilter">
+          <option value="all">All Categories</option>
+          <option value="Road Issues">Road Issues</option>
+          <option value="Streetlight">Streetlight</option>
+          <option value="Garbage / Sanitation">Garbage</option>
+          <option value="Water Leakage">Water Leakage</option>
+          <option value="Drainage">Drainage</option>
+        </select>
+      </div>
+    </div>
+    <div id="adminMap" style="height:420px;"></div>
+  </div>
+
+  <!-- Complaints Table -->
+  <div class="sc-fade-up" style="animation-delay:0.18s;">
+    <div class="sc-section-header">
+      <div class="sc-section-title">All Complaints</div>
+    </div>
+    <div class="sc-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="adminTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script type="module" src="/src/js/admin.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script>emailjs.init("y8bNsKJ_rquUj7_5f")</script>
+</body>
+</html>
