@@ -37,8 +37,8 @@ function adminLogin(){
 const username=document.getElementById("adminUser").value.trim()
 const password=document.getElementById("adminPass").value.trim()
 
-const ADMIN_USER = admin
-const ADMIN_PASS = 123456
+const ADMIN_USER = "admin"
+const ADMIN_PASS = "123456"
 
 if(username === ADMIN_USER && password === ADMIN_PASS){
 
