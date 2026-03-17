@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Confirm Complaint</title>
+
+  <link rel="stylesheet" href="/css/style.css">
+
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+  <div style="text-align:center; margin-top:100px;">
+    <h1 id="statusTitle">Processing...</h1>
+    <p id="statusMessage">Please wait while we update your complaint.</p>
+  </div>
+
+  <script type="module">
+
+    // 🔑 Supabase setup
+    const supabaseUrl = "YOUR_SUPABASE_URL"
+    const supabaseKey = "YOUR_ANON_PUBLIC_KEY"
+
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+
+    // 🔍 Read URL params
+    const params = new URLSearchParams(window.location.search)
+
+    const compId = params.get("comp")
+    const action = params.get("action")
+
+    const title = document.getElementById("statusTitle")
+    const message = document.getElementById("statusMessage")
+
+    async function updateStatus() {
+
+      if (!compId || !action) {
+        title.innerText = "Invalid Link"
+        message.innerText = "Missing complaint details."
+        return
+      }
+
+      let newStatus = ""
+
+      if (action === "yes") {
+        newStatus = "resolved"
+      } else if (action === "no") {
+        newStatus = "pending"
+      } else {
+        title.innerText = "Invalid Action"
+        message.innerText = "Unknown confirmation type."
+        return
+      }
+
+      const { error } = await supabase
+        .from("complaints")
+        .update({ status: newStatus })
+        .eq("comp_id", compId)
+
+      if (error) {
+        console.error(error)
+        title.innerText = "Error"
+        message.innerText = "Failed to update complaint."
+        return
+      }
+
+      // ✅ Success UI
+      if (action === "yes") {
+        title.innerText = "✅ Complaint Confirmed"
+        message.innerText = "Thank you! The issue is marked as resolved."
+      } else {
+        title.innerText = "⚠️ Issue Still Exists"
+        message.innerText = "We’ve marked it as pending again. Admin will review."
+      }
+
+    }
+
+    updateStatus()
+
+  </script>
+
+</body>
+</html>
