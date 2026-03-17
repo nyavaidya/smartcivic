@@ -37,8 +37,8 @@ function adminLogin(){
 const username=document.getElementById("adminUser").value.trim()
 const password=document.getElementById("adminPass").value.trim()
 
-const ADMIN_USER = import.meta.env.VITE_ADMIN_USER
-const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASS
+const ADMIN_USER = admin
+const ADMIN_PASS = 123456
 
 if(username === ADMIN_USER && password === ADMIN_PASS){
 
